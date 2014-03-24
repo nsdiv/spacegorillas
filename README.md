@@ -1,6 +1,9 @@
-## Chatofpomelo
+## Doodleofpomelo
 
-A simple chat room experiment using pomelo framework and html5.
+A collaboartive doodle experiment using pomelo framework and html5. It is based on the chatofpomelo project hosted at  https://github.com/NetEase/chatofpomelo
+
+Disclaimer - These are early days for the doodle pad. I'll remove this note when the project is ready.
+
 The chat server currently runs on nodejs v0.8, and should run fine on the latest stable as well.It requires the following npm libraries:
 - pomelo
 - express
@@ -29,7 +32,7 @@ Pomelo framework provides monitoring tool: AdminConsole. After game is loaded, y
 
 (The MIT License)
 
-Copyright (c) 2013 NetEase, Inc. and other contributors
+Copyright (c) 2013 Ninad Divadkar and other contributors
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
