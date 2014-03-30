@@ -34,8 +34,9 @@ var doodlePad = {
     brushSizeID: '#brush_size',
     colorPickerID: '#color_picker',
 
-    init: function (myDoodle) {
-        doodlePad.myDoodle = myDoodle;
+    doodles: [], // collection of all the user's doodles
+    init: function (username, myDoodle) {
+        doodles[username] = myDoodle; // current users doodle
 
         // Collect elements from the DOM and set-up the canvas
         doodlePad.canvas = $('#doodle_canvas')[0];
@@ -107,6 +108,9 @@ var doodlePad = {
                 myDoodle.changeColor(1, newColor);
             }
         });
+    },
+    addDoodle: function(username, doodle){
+    	doodles[username] = doodle;
     },
     newDoodle: function (src, id) {
         doodlePad.clearCanvas();
@@ -234,7 +238,7 @@ var doodlePad = {
 };
 
 
-
+// A doodle is a collection of the users drawing history
 function doodle() {
     var currDoodle = this;
     // Define some variables
@@ -245,16 +249,16 @@ function doodle() {
     currDoodle.noticeID = '#notification';
     currDoodle.loaded_id = false;
     currDoodle.history = [];
-    currDoodle.history[username] = [];
-    currDoodle.history[username][0] = [];
+    currDoodle.history = [];
+    currDoodle.history[0] = [];
 
     // Change the size of the brush
     currDoodle.changeBrushSize = function (ev, value) {
         currDoodle.linethickness = value;
         if (ev) {
             // also add to history
-            currDoodle.history[username][currDoodle.history[username].length - 1].push({ ev: 'changeBrushSize', value:value });
-            console.log('changeBrushSize ' + value);
+            currDoodle.history[currDoodle.history.length - 1].push({ ev: 'changeBrushSize', value:value });
+            console.log('changeBrushSize; value=' + value);
         }
     };
 
@@ -271,7 +275,7 @@ function doodle() {
             y = ev.pageY - $(doodlePad.canvas).offset().top;
 
             // also add to history
-            currDoodle.history[username][currDoodle.history[username].length - 1].push({ ev: 'drawStart', x: x, y: y });
+            currDoodle.history[currDoodle.history.length - 1].push({ ev: 'drawStart', x: x, y: y });
             console.log('drawStart ' + x + ", " + y);
         }
         currDoodle.drawing = true;
@@ -292,7 +296,7 @@ function doodle() {
 
             if (currDoodle.drawing) {
                 // also add to history
-                currDoodle.history[username][currDoodle.history[username].length - 1].push({ ev: 'draw', x: x, y: y });
+                currDoodle.history[currDoodle.history.length - 1].push({ ev: 'draw', x: x, y: y });
                 console.log('draw ' + x + ", " + y);
             }
         }
@@ -331,34 +335,35 @@ function doodle() {
     // Finished drawing (mouse up)
     currDoodle.drawEnd = function (ev) {
         currDoodle.drawing = false;
-        if (ev && currDoodle.history[username].length > 0) {
+        if (ev && currDoodle.history.length > 0) {
             // also add to history
-            currDoodle.history[username][currDoodle.history[username].length - 1].push({ ev: 'drawEnd' });
+            currDoodle.history[currDoodle.history.length - 1].push({ ev: 'drawEnd' });
             console.log('drawEnd');
 
-            // send to everyone else
-            var route = "chat.chatHandler.draw";
-            var target = $("#usersList").val();
+            if (ev){//if this is the current users doodle and has been triggered by an event
+            	// send to everyone else
+            	var route = "chat.chatHandler.draw";
+            	var target = $("#usersList").val();
 
-            // message is the last event
-            var msg = JSON.stringify(currDoodle.history[username][currDoodle.history[username].length - 1]);
-            if(!util.isBlank(msg)) {
-        		pomelo.request(route, {
-        			rid: rid,
-        			content: msg,
-        			from: username,
-        			target: target
-            	}, function(data) {
-            		$("#entry").attr("value", ""); // clear the entry field.
-            		if(target != '*' && target != username) {
-            			addMessage(username, target, msg);
-            			$("#chatHistory").show();
-            		}
-            	});
+            	// message is the last event
+            	var msg = JSON.stringify(currDoodle.history[currDoodle.history.length - 1]);
+            	if(!util.isBlank(msg)) {
+            		pomelo.request(route, {
+            			rid: rid,
+            			content: msg,
+            			from: username,
+            			target: target
+            		}, function(data) {
+            			$("#entry").attr("value", ""); // clear the entry field.
+            			if(target != '*' && target != username) {
+            				addMessage(username, target, msg);
+            				$("#chatHistory").show();
+            			}
+            		});
+            	}
             }
-
             // adding a new list
-            currDoodle.history[username][currDoodle.history[username].length] = [];
+            currDoodle.history[currDoodle.history.length] = [];
             
     		
     		//var drawHubClient = $.connection.drawHub;
@@ -434,8 +439,6 @@ var LENGTH_ERROR = "Name/Channel is too long or too short. 20 character max.";
 var NAME_ERROR = "Bad character in Name/Channel. Can only have letters, numbers, Chinese characters, and '_'";
 var DUPLICATE_ERROR = "Please change your name to login.";
 
-var myDoodle = null;
-
 util = {
 	urlRE: /https?:\/\/([-\w\.]+)+(:\d+)?(\/([^\s]*(\?\S+)?)?)?/g,
 	//  html sanitizer
@@ -502,10 +505,20 @@ function addMessage(from, target, text, time) {
 }
 
 function drawMessage(from, target, message, time) {
+	// check if the user is the current user. if yes we've already drawn his stuff
+	if (from == username) {
+		return;
+	}
+	
+	// create a new doodle if it doesn't exist
+	if (!doodlePad.doodles[from]){
+		doodlePad.addDoodle(user, new Doodle());
+	}	
+	
 	// parse the message and execute in the canvas
     var commands = eval(message);
     if (commands.length > 1) {
-    	myDoodle.drawCommands(commands);
+    	doodlepad[from].drawCommands(commands);
         //commands = command[1];
         //if (command.length > 0) {
             
@@ -694,7 +707,7 @@ $(document).ready(function() {
 					initUserList(data);
 					
 					myDoodle = new doodle();
-				    doodlePad.init(myDoodle);
+				    doodlePad.init(username, myDoodle);
 				});
 			});
 		});

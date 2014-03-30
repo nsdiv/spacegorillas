@@ -23,9 +23,9 @@ handler.send = function(msg, session, next) {
 	var username = session.uid.split('*')[0];
 	var channelService = this.app.get('channelService');
 	var param = {
-		msg: msg.content,
-		from: username,
-		target: msg.target
+			msg: msg.content,
+			from: username,
+			target: msg.target
 	};
 	channel = channelService.getChannel(rid, false);
 
@@ -52,9 +52,9 @@ handler.draw = function(msg, session, next) {
 	var username = session.uid.split('*')[0];
 	var channelService = this.app.get('channelService');
 	var param = {
-		msg: msg.content,
-		from: username,
-		target: msg.target
+			msg: msg.content,
+			from: username,
+			target: msg.target
 	};
 	channel = channelService.getChannel(rid, false);
 
