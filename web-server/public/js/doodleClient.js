@@ -36,15 +36,20 @@ var doodlePad = {
 
     doodles: [], // collection of all the user's doodles
     init: function (username, myDoodle) {
-        doodles[username] = myDoodle; // current users doodle
-
-        // Collect elements from the DOM and set-up the canvas
+    	// Collect elements from the DOM and set-up the canvas
         doodlePad.canvas = $('#doodle_canvas')[0];
         doodlePad.context = doodlePad.canvas.getContext('2d');
         doodlePad.oldState = doodlePad.context.getImageData(0, 0, doodlePad.width, doodlePad.height);
 
+    	doodlePad.clearCanvas(); // clear canvas
+    	
+        doodlePad.doodles[username] = myDoodle; // current users doodle
+        
         doodlePad.newDoodle();
 
+        // Set the drawning method to pen
+        doodlePad.doodles[username].pen();
+        
         $('#share div').hide();
         // Set up the share links
         $('#share h2').bind('click', function () {
@@ -110,10 +115,9 @@ var doodlePad = {
         });
     },
     addDoodle: function(username, doodle){
-    	doodles[username] = doodle;
+    	doodlePad.doodles[username] = doodle;
     },
     newDoodle: function (src, id) {
-        doodlePad.clearCanvas();
         if (!src) {
             src = '/static/images/blank.gif';
         }
@@ -200,9 +204,6 @@ var doodlePad = {
 
         // Clear state
         doodlePad.oldState = doodlePad.context.getImageData(0, 0, doodlePad.width, doodlePad.height);
-
-        // Set the drawning method to pen
-        doodlePad.myDoodle.pen();
 
         // Flag that the user is working on a new doodle
         doodlePad.updating = false;
@@ -426,7 +427,6 @@ function doodle() {
 }
 
 
-
 var pomelo = window.pomelo;
 var username;
 var users;
@@ -438,6 +438,8 @@ var LOGIN_ERROR = "There is no server to log in, please wait.";
 var LENGTH_ERROR = "Name/Channel is too long or too short. 20 character max.";
 var NAME_ERROR = "Bad character in Name/Channel. Can only have letters, numbers, Chinese characters, and '_'";
 var DUPLICATE_ERROR = "Please change your name to login.";
+
+var myDoodle = null;
 
 util = {
 	urlRE: /https?:\/\/([-\w\.]+)+(:\d+)?(\/([^\s]*(\?\S+)?)?)?/g,
@@ -512,13 +514,13 @@ function drawMessage(from, target, message, time) {
 	
 	// create a new doodle if it doesn't exist
 	if (!doodlePad.doodles[from]){
-		doodlePad.addDoodle(user, new Doodle());
+		doodlePad.addDoodle(from, new doodle());
 	}	
 	
 	// parse the message and execute in the canvas
     var commands = eval(message);
     if (commands.length > 1) {
-    	doodlepad[from].drawCommands(commands);
+    	doodlePad.doodles[from].drawCommands(commands);
         //commands = command[1];
         //if (command.length > 0) {
             
