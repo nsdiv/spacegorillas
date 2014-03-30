@@ -365,11 +365,6 @@ function doodle() {
             }
             // adding a new list
             currDoodle.history[currDoodle.history.length] = [];
-            
-    		
-    		//var drawHubClient = $.connection.drawHub;
-    		//drawHubClient.sendMessage(JSON.stringify(currDoodle.history));
-    		//currDoodle.history = []; // clear
         }
     };
 
@@ -377,7 +372,7 @@ function doodle() {
     currDoodle.pen = function (ev, currColor) {
         if (ev != null) {
             // also add to history
-            currDoodle.history.push({ ev: 'pen', currColor: currColor });
+        	currDoodle.history[currDoodle.history.length - 1].push({ ev: 'pen', currColor: currColor });
             console.log('pen');
         }
         // Change color and thickness of the line
@@ -388,7 +383,7 @@ function doodle() {
     currDoodle.eraser = function (ev) {
         if (ev != null) {
             // also add to history
-            currDoodle.history.push({ ev: 'eraser' });
+        	currDoodle.history[currDoodle.history.length - 1].push({ ev: 'eraser' });
             console.log('eraser');
         }
         // Change color and thickness of the line
@@ -399,7 +394,7 @@ function doodle() {
         currDoodle.currColor = newColor;
         if (ev) {
             // also add to history
-            currDoodle.history.push({ ev: 'changeColor', newColor: newColor });
+        	currDoodle.history[currDoodle.history.length - 1].push({ ev: 'changeColor', newColor: newColor });
             console.log('changeColor ' + newColor);
         }
     };
@@ -594,8 +589,6 @@ function showError(content) {
 // show login panel
 function showLogin() {
 	$("#loginView").show();
-	$("#chatHistory").hide();
-	$("#toolbar").hide();
 	$("#loginError").hide();
 	$("#loginUser").focus();
 };
@@ -604,7 +597,7 @@ function showLogin() {
 function showChat() {
 	$("#loginView").hide();
 	$("#loginError").hide();
-	$("#toolbar").show();
+	$("#loggedInView").show();
 	$("entry").focus();
 	scrollDown(base);
 };

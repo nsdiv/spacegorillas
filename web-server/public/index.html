@@ -6,45 +6,61 @@
 <title>chatofpomelo</title>
 <link rel="stylesheet" href="style.css" type="text/css" />
 <script src="js/lib/jquery-1.8.0.min.js">
-         		
-        </script>
+	
+</script>
 <script src="js/lib/socket.io.js">
-                		
-        </script>
-        
-        <script src="js/lib/jquery.ps-color-picker.js" type="text/javascript">
+	
+</script>
+
+<script src="js/lib/jquery.ps-color-picker.js" type="text/javascript">
 	
 </script>
 <script src="js/lib/pomeloclient.js">
-                		
-        </script>
+	
+</script>
 <script src="js/doodleClient.js">
-                		
-        </script>
+	
+</script>
 <script src="js/pop.js">
-                		
-        </script>
+	
+</script>
 </head>
 
 <body>
 	<div id="app">
-		<div id="canvas_wrapper">
-			<canvas width="600" height="400" id="doodle_canvas"
-				style="border: solid 1px red">
+		<div id="loggedInView" style="display:none;">
+			<div id="canvas_wrapper">
+				<canvas width="600" height="400" id="doodle_canvas"
+					style="border: solid 1px red">
                 </canvas>
-		</div>
-		<div id="controls">
-			<button id="save">Save</button>
-			<button id="new">New</button>
-			<button id="pen" class="active">Pen</button>
-			<button id="eraser">Eraser</button>
-			<br /> <br /> <br /> <label for="brush"> Brush Size:</label><input
-				name="brush" id="brush_size" type="range" value="1" min="0" max="10" />
-			<br /> <label for="brush">Color Picker:</label><input type="text"
-				id="color_picker" value="#000000" />
+			</div>
+			<div id="controls">
+				<button id="save">Save</button>
+				<button id="new">New</button>
+				<button id="pen" class="active">Pen</button>
+				<button id="eraser">Eraser</button>
+				<br /> <br /> <br /> <label for="brush"> Brush Size:</label><input
+					name="brush" id="brush_size" type="range" value="1" min="0"
+					max="10" /> <br /> <label for="brush">Color Picker:</label><input
+					type="text" id="color_picker" value="#000000" />
+			</div>
+			<div id="chatHistory"></div>
+			<div id="toolbar">
+				<ul id="status">
+					<li>users: <select name="users" id="usersList">
+							<option value="*">all</option>
+					</select>
+					</li>
+					<li>name: <span id="name"> </span>
+					</li>
+					<li>room: <span id="room"> </span>
+					</li>
+				</ul>
+				<input tabindex="1" type="text" id="entry" />
+			</div>
 		</div>
 		<div id="loginView">
-			<div id="loginTitle">Chat of Pomelo</div>
+			<div id="loginTitle">Doodle of Pomelo</div>
 			<table>
 				<tr>
 					<td><input id="loginUser" type="text"
@@ -59,20 +75,7 @@
 			</table>
 			<div id="loginError"></div>
 		</div>
-		<div id="chatHistory"></div>
-		<div id="toolbar">
-			<ul id="status">
-				<li>users: <select name="users" id="usersList">
-						<option value="*">all</option>
-				</select>
-				</li>
-				<li>name: <span id="name"> </span>
-				</li>
-				<li>room: <span id="room"> </span>
-				</li>
-			</ul>
-			<input tabindex="1" type="text" id="entry" />
-		</div>
+
 	</div>
 	<div id="pop">
 		<div id="popHead">
