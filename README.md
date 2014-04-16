@@ -12,8 +12,7 @@ The chat server currently runs on nodejs v0.8, and should run fine on the latest
 Both of them can be installed via 'sh npm-install.sh' (it will install a local copy of all the dependencies in the node_modules directory)
 
 ## Viewing
-
- * Visit [demo game github](https://github.com/NetEase/chatofpomelo) to get the source code and install it on your local machine.
+Coming up shortly
 
 ## Configuration
 
