@@ -11,19 +11,19 @@ var Handler = function(app) {
 var handler = Handler.prototype;
 
 /**
- * Send messages to users
+ * Send move message to users
  *
  * @param {Object} msg message from client
  * @param {Object} session
  * @param  {Function} next next stemp callback
  *
  */
-handler.send = function(msg, session, next) {
+handler.rotate = function(msg, session, next) {
 	var rid = session.get('rid');
 	var username = session.uid.split('*')[0];
 	var channelService = this.app.get('channelService');
 	var param = {
-			route: 'onChat',
+			route: 'onRotate',
 			msg: msg.content,
 			from: username,
 			target: msg.target
@@ -48,12 +48,12 @@ handler.send = function(msg, session, next) {
 	});
 };
 
-handler.draw = function(msg, session, next) {
+handler.fire = function(msg, session, next) {
 	var rid = session.get('rid');
 	var username = session.uid.split('*')[0];
 	var channelService = this.app.get('channelService');
 	var param = {
-			route: 'onDraw',
+			route: 'onFire',
 			msg: msg.content,
 			from: username,
 			target: msg.target
