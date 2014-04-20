@@ -5,97 +5,92 @@ var state = 'ready';
 
 
 // a generic cannon
-var cannon = {
-	init : function (name, ox, oy){
-		this.ox = ox;
-		this.oy = oy;
-		this.nozzle = draw.rect(ox - 12, oy - 12, 50, 24); // create new
-		this.nozzle.attr({stroke: 'black', 'stroke-width': 3, fill: 'green'}); // color
-		
-		// and the bal
-		this.ball = draw.circle(ox, oy, 10);
-		this.ball.attr({stroke: 'black', 'stroke-width': 3, fill: 'blue'}); 
-	},
-	rotate : function(pageX, pageY){
-		var dx = pageX - this.ox;
-		var dy = pageY - this.oy;
-		var angle = Math.atan2(dy, dx) / Math.PI * 180;
-		this.nozzle.rotate(angle, this.ox, this.oy);
-	},
-	fire : function(pageX, pageY){
-		if (state == 'ready') {
-		    state = 'flying';
-		    var vx = (pageX - this.ox) / 50;
-		    var vy = (pageY - this.oy) / 50;
-		    var x = this.ball.attr('cx');
-		    var y = this.ball.attr('cy');
-		    var advance = function() {
-		      x += vx;
-		      y += vy;
-		      vy += 0.1;
-		      this.ball.attr({cx: x, cy: y});
-		      if (!inrect(field, this.ball) || inrect(wall, this.ball) || inrect(target, this.ball)) {
-		        if (inrect(target, this.ball)) target.attr('fill', 'yellow');
-		        state = 'landed';
-		      } else {
-		        setTimeout(advance, 5);
-		      }
-		    };
-		    advance();
-		  }
-		  else if (state == 'landed') {
-		    if (inrect(target, this.ball)) {
-		      target.attr({x: w - 50 - Math.random() * (w / 3),
-		                   y: h - 50 - Math.random() * (h / 2)});
-		      target.attr('fill', 'red');
-		    }
-		    this.ball.attr({cx: this.ox, cy: this.oy});
-		    state = 'ready';
-		  }
+var cannon = function(name, team, ox, oy) {
+	this.team = team;
+	this.ox = ox;
+	this.oy = oy;
+	this.nozzle = draw.rect(ox - 12, oy - 12, 50, 24); // create new
+	this.nozzle.attr({stroke: 'black', 'stroke-width': 3, fill: 'green'}); // color
+
+	// and the ball
+	this.ball = draw.circle(ox, oy, 10);
+	this.ball.attr({stroke: 'black', 'stroke-width': 3, fill: 'blue'}); 
+};
+
+cannon.prototype.rotate = function(pageX, pageY){
+	var dx = pageX - this.ox;
+	var dy = pageY - this.oy;
+	var angle = Math.atan2(dy, dx) / Math.PI * 180;
+	this.nozzle.rotate(angle, this.ox, this.oy);
+};
+
+cannon.prototype.fire = function(pageX, pageY){
+	if (state == 'ready') {
+		state = 'flying';
+		var vx = (pageX - this.ox) / 50;
+		var vy = (pageY - this.oy) / 50;
+		var x = this.ball.attr('cx');
+		var y = this.ball.attr('cy');
+		var ball = this.ball;
+		var firingCannon = this;
+		var advance = function() {
+			x += vx;
+			y += vy;
+			vy += 0.1;
+			ball.attr({cx: x, cy: y});
+			if (!game.hasBallLanded(firingCannon)) {
+				setTimeout(advance, 5); // do the same after 5 ms
+			}
+			
+			/*if (!inrect(field, ball) || inrect(wall, ball) || inrect(target, ball)) {
+				if (inrect(target, ball)) target.attr('fill', 'yellow');
+				state = 'landed';
+			} else {
+				setTimeout(advance, 5);
+			}*/
+		};
+		advance();
+	}
+	else if (state == 'landed') {
+		if (inrect(target, this.ball)) {
+			target.attr({x: w - 50 - Math.random() * (w / 3),
+				y: h - 50 - Math.random() * (h / 2)});
+			target.attr('fill', 'red');
+		}
+		this.ball.attr({cx: this.ox, cy: this.oy});
+		state = 'ready';
 	}
 };
 
-function inrect(r, ball) {
-	  if (ball.attr('cx') + ball.attr('r') < r.attr('x') ||
-	      ball.attr('cy') + ball.attr('r') < r.attr('y') ||
-	      ball.attr('cx') - ball.attr('r') > r.attr('x') + r.attr('width') ||
-	      ball.attr('cy') - ball.attr('r') > r.attr('y') + r.attr('height')) {
-	    return false;
-	  }
-	  return true;
-	}
-
+var draw;
 var game = {
 	cannons:[],
 	init: function(){
-		var w = $(window).width();
-		var h = $(window).height();
-		var draw = Raphael(0, 0, w, h);
+		var w = 1300; //$(window).width();
+		var h = 800;  //$(window).height();
+		draw = Raphael(0, 0, w, h);
 
 		// create the field
-		var field = draw.rect(-10, -h - 10, w + 20, 2 * h + 20);
-		field.attr({fill: 'lightgray'});
+		game.field = draw.rect(-10, -h - 10, w + 20, 2 * h + 20);
+		game.field.attr({fill: 'lightgray'});
 
 		// wall between two teams
-		var wall = draw.rect(w / 2 - 25, h / 2, 50, h / 2 - 8);
-		wall.attr({stroke: 'black', 'stroke-width': 3, fill: 'gray'});
-
-		var target = draw.rect(w - 50, h - 50, 42, 42);
-		target.attr({stroke: 'black', 'stroke-width': 3, fill: 'red'});
+		game.wall = draw.rect(w / 2 - 25, h / 2, 50, h / 2 - 8);
+		game.wall.attr({stroke: 'black', 'stroke-width': 3, fill: 'gray'});
 	},
 	initCannonsList : function(data) {
-		for(var i = 0; i < data.cannons.length; i++) {
+		for(var i = 0; i < data.users.length; i++) {
 			// add cannons to our list
-			game.cannons[data.cannons[i].name] = new cannon(data.cannons[i].ox, data.cannons[i].oy);
+			game.cannons[data.users[i].username] = new cannon(data.users[i].username,
+					data.users[i].team, data.users[i].ox, data.users[i].oy);
+			
+			// if the cannons name matches our username then thats our cannon
+			if (data.users[i].username === username){
+				game.currCannon = game.cannons[data.users[i].username];
+			}
 		}
 	},
-	setupCannon : function(cannonName){
-		// create our own cannon
-		var ox = 20;
-		var oy = h-20;
-		game.currCannon = new cannon(ox, oy);
-		game.cannons[cannonName] = game.currCannon; // this is our cannon
-
+	setupCannon : function(){
 		// cannon rotation
 		$('body').mousemove(function(e) {
 			game.currCannon.rotate(e.pageX, e.pageY);
@@ -119,8 +114,9 @@ var game = {
 
 		// firing
 		$('body').click(function(e) {
-			game.currCannon(e.pageX, e.pageY);
+			game.currCannon.fire(e.pageX, e.pageY);
 			
+			// send message about firing
 			var route = "chat.chatHandler.fire";
 			var target = $("#usersList").val();
 			var msg = JSON.stringify({
@@ -142,6 +138,41 @@ var game = {
 	},
 	removeCannon : function(name){
 		game.cannons[name] = null;
+	},
+	hasBallLanded : function (firingCannon){
+		// first check if ball is within the field
+		if (!game.inrect(game.field, firingCannon.ball)){
+			return true; // has gone out of the field so has landed
+		}
+		if (game.inrect(game.wall, firingCannon.ball)){
+			return true; // has hit the wall so has landed
+		}
+		// now see if it has hit any cannon of the other side
+		for(var i = 0; i < game.cannons.length; i++){
+			if (game.cannons[i].team === firingCannon.team){
+				continue; //cannot land on same teams cannon
+			}
+			if (game.inrect(game.cannons[i].nozzle, firingCannon.ball)){
+				game.cannons[i].nozzle.attr('fill', 'yellow');
+				return true; // ball landed on the opposing teams cannon and this cannon is dead
+			}
+		}
+		return false;
+			
+		/*if (!inrect(game.field, firingCannon.ball) || inrect(game.wall, ball) || inrect(target, ball)) {
+			if (inrect(target, ball)) target.attr('fill', 'yellow');
+			state = 'landed';
+		}*/
+	},
+	
+	inrect : function(r, ball) {
+		if (ball.attr('cx') + ball.attr('r') < r.attr('x') ||
+				ball.attr('cy') + ball.attr('r') < r.attr('y') ||
+				ball.attr('cx') - ball.attr('r') > r.attr('x') + r.attr('width') ||
+				ball.attr('cy') - ball.attr('r') > r.attr('y') + r.attr('height')) {
+			return false;
+		}
+		return true;
 	}
 };
 

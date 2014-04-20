@@ -2,6 +2,9 @@ module.exports = function(app) {
 	return new ChatRemote(app);
 };
 
+var gameWidth = 1300;
+var gameHeight = 800;
+
 var ChatRemote = function(app) {
 	this.app = app;
 	this.channelService = app.get('channelService');
@@ -10,23 +13,31 @@ var ChatRemote = function(app) {
 /**
  * Add user into chat channel.
  *
- * @param {String} uid unique id for user
+ * @param {String} user 
  * @param {String} sid server id
  * @param {String} name channel name
  * @param {boolean} flag channel parameter
  *
  */
-ChatRemote.prototype.add = function(uid, sid, name, flag, cb) {
+ChatRemote.prototype.add = function(user, sid, name, flag, cb) {
+	console.info("adding user; user=" + user);
 	var channel = this.channelService.getChannel(name, flag);
-	var username = uid.split('*')[0];
+	// add game specific params
+	// set team of user. if number of people are even then left else right
+	var users = channel.getMembers();
+	user.team = (users.length % 2 === 0 ? "L" : "R");
+	user.ox = (user.team === 'L' ? 20 : gameWidth - 20); // users of one team start at the same x axis
+	user.oy = (gameHeight - 20 - ((users.length / 2) * 30));
+	
 	var param = {
 		route: 'onAdd',
-		user: username
+		user: user
 	};
 	channel.pushMessage(param);
 
 	if( !! channel) {
-		channel.add(uid, sid);
+		//channel.add(uid, sid);
+		channel.add(user, sid);
 	}
 
 	cb(this.get(name, flag));
@@ -47,9 +58,10 @@ ChatRemote.prototype.get = function(name, flag) {
 	if( !! channel) {
 		users = channel.getMembers();
 	}
-	for(var i = 0; i < users.length; i++) {
-		users[i] = users[i].split('*')[0];
-	}
+	//loop passes only the usernames. we need all the users.
+	//for(var i = 0; i < users.length; i++) {
+		//users[i] = users[i].split('*')[0];
+	//}
 	return users;
 };
 
